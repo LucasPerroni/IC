@@ -1,0 +1,13 @@
+-> Density
+1. Open density_radius.py and change the model to galaxy or cluster
+2. Set the path to the snapshot
+3. Change (Md, Rd) or (Mh, Ah, Mg, Ag, Gamma_h, Gamma_g) to the values for the specific galaxy/cluster
+4. Run python3 density_radius.py
+5. Open plot_dr.py and change the model to galaxy or cluster and the (Gamma_h, Gamma_g) for the specific cluster
+6. Run python3 plot_dr.py
+
+-> Temperature
+1. Open temperature_radius.py and change mi value (Average molecular weight)
+2. Set the path to the hdf5 file
+3. Run python3 temperature_radius.py
+4. Run python3 plot_tr.py

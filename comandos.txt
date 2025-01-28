@@ -1,0 +1,16 @@
+Ativar python: source python-env/bin/activate
+
+Criar snapshot: python3 ../clustep/clustep/clustep.py -i params_cluster.ini -o snapshot_0000.hdf5 --hdf5
+
+Visualizar hdf5: h5ls -r snapshot_0000.hdf5
+
+Procurar um pacote específico: apt --installed list | grep _nome do pacote_
+
+Listar todos os arquivos, do mais velho para o mais novo: ls -lhAtr
+
+Rodar Gadget4: mpirun -np 4  ./gadget4/Gadget4  ./config/param.txt
+Reiniciar Gadget4: mpirun -np 4  ./gadget4/Gadget4  ./config/param.txt 1
+
+Rodar GLNemo2:
+	- "C:\Program Files\VcXsrv\vcxsrv.exe" :0 -ac -wgl (prompt de comando) 
+	- LIBGL_ALWAYS_SOFTWARE=1 glnemo2 snapshot_x.hdf5 (wsl)

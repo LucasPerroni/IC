@@ -1,0 +1,59 @@
+
+#====================================================
+1) CREATING INITIAL CONDITIONS
+
+# create a directory
+mkdir ic
+
+# go into that directory
+cd ic
+
+# download galstep
+git clone https://github.com/elvismello/galstep
+
+# copy the .ini file here
+cp galstep/galstep/params_galaxy.ini .
+
+# run galstep
+python3 galstep/galstep/galstep.py -i params_galaxy.ini -o snapshot_0000.hdf5 -cores 4 --hdf5
+
+# have a look at the intial conditions
+glnemo2 snapshot_0000.hdf5 halo
+glnemo2 snapshot_0000.hdf5 disk
+
+
+#====================================================
+2) INSPECTING THE CONTENTS OF THE HDF5 FILE
+
+# see what Groups are present
+h5ls snapshot_0000.hdf5
+
+# see the Datasets within each Group
+h5ls -r snapshot_0000.hdf5
+
+# leave this directory
+cd ..
+
+
+#====================================================
+3) EXAMPLE PYTHON SCRIPTS
+
+# go into the directory
+cd 000
+
+# how to load hdf5 data into arrays
+python3 0-read_hdf5.py
+
+# how to write columns of data into a txt file
+python3 1-save_txt.py
+
+# how to read a txt file and make a simple scatter plot
+python3 2-plot.py 
+
+# example: compute centre of mass
+python3 3-com.py
+
+# example: compute total mass or mass within a radius
+python3 4-totalmass.py
+
+#====================================================

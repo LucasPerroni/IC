@@ -1,0 +1,25 @@
+1. mover os snapshots gerados pelo Gadget4 para a pasta hdf5/
+2. executar ./create_screenshots.sh
+3. caso queira limpar as pastas quando nao precisar mais dos arquivos, executar o comando ./clean_folders.sh
+
+
+% OLD
+1. mover os snapshots gerados pelo Gadget4 para a pasta hdf5/
+
+  -> Dentro da pasta hdf5/
+2. salvar os nomes dos snapshots, dentro da pasta hdf5, usando o comando: ls snapshot_* > snapshots.txt
+3. salvar os frames do halo com o comando: glnemo2 snapshot.txt halo play=t screenshot=../frames/halo/frame_
+4. salvar os frames do gas com o comando: glnemo2 snapshot.txt gas play=t screenshot=../frames/gas/frame_
+
+  -> dentro da pasta snapshots/
+5. salvar os frames juntos com o comando: python3 convert_frames.py
+6. gerar os graficos com o comando: python3 density_radius.py
+7. juntar os frames e os graficos com o comando: python3 convert_plots.py
+8. gerar a animacao com o comando: ffmpeg -framerate 8 -i images/image_%05d.jpg -vf "scale=930:748" -c:v libx264 -pix_fmt yuv420p animation.mp4
+
+-----------------------------------------------------------------------
+
+frames/ -> pasta onde estao salvos os frames do gas, do halo e da juncao dos dois
+plots/ -> pasta onde estao salvos os graficos da temperatura e da densidade de cada snapshot
+images/ -> pasta onde estao salvas as imagens finais para a animacao
+hdf5/ -> pasta onde estao salvos os snapshots originais

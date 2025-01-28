@@ -1,0 +1,6 @@
+salvar os snapshots em um txt: ls snapshot_* > snapshots.txt
+salvar os frames: glnemo2 snapshot.txt halo_gas play=t screenshot=../frames/halo_gas/frame_
+salvar o video mp4: ffmpeg -framerate 8 -i frame_.%05d.jpg -vf "scale=930:748" -c:v libx264 -pix_fmt yuv420p halo_gas.mp4
+abrir video: vlc halo_gas.mp4
+juntar imagens horizontalmente: convert image1.jpg image2.jpg +append out.jpg
+juntar imagens verticalmente: convert image1.jpg image2.jpg -append out.jpg
