@@ -7,3 +7,4 @@ snapshots/
 python-env/
 005/hdf5/
 *.hdf5
+*.mp4
