@@ -1,2 +1,0 @@
-Criar vídeo: ./create_animation.sh
-
