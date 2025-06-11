@@ -23,6 +23,11 @@ for i in range(len(lines)):
 
 count = 0
 for file in snapshots:
+    if count < 8 or count > 11:
+    # if count != 9:
+        count += 1
+        continue
+
     print(f"{bcolors.OKGREEN}Generating frame {count} of {len(lines) - 1:03d}...{bcolors.ENDC}")
     
     s = pynbody.load(file)
@@ -32,13 +37,13 @@ for file in snapshots:
     Mh = 1.67262192 * 10**(-27) # Proton mass in kg
     s.gas["kT"] = (s.gas["u"] * (2 * mi * Mh) / 3) * 6.241506 * 10**15 * 10**(6)
 
-    pynbody.plot.image(s.dm, qty="rho", width=8000, cmap="twilight", vmin=1e-9, vmax=1e9)
-    plt.savefig(f"{IMAGE_PATH}dm/dm_{count:03d}.png", bbox_inches="tight", dpi=300)
+    # pynbody.plot.image(s.dm, qty="rho", width=8000, cmap="twilight", vmin=1e-9, vmax=1e9)
+    # plt.savefig(f"{IMAGE_PATH}dm/dm_{count:03d}.png", bbox_inches="tight", dpi=300)
 
-    pynbody.plot.image(s.gas, qty="rho", width=8000, cmap="inferno", vmin=1e0, vmax=1e7)
-    plt.savefig(f"{IMAGE_PATH}gas/gas_{count:03d}.png", bbox_inches="tight", dpi=300)
+    # pynbody.plot.image(s.gas, qty="rho", width=8000, cmap="inferno", vmin=1e0, vmax=1e7)
+    # plt.savefig(f"{IMAGE_PATH}gas/gas_{count:03d}.png", bbox_inches="tight", dpi=300)
 
-    pynbody.plot.image(s.gas, qty="kT", width=6000, cmap="inferno", log=False, vmin=0, vmax=20)
+    pynbody.plot.image(s.gas, qty="kT", width=2000, cmap="twilight", log=False, vmin=0, vmax=40, denoise=True, colorbar_label="kT (keV)")
     plt.savefig(f"{IMAGE_PATH}gas/temp_{count:03d}.png", bbox_inches="tight", dpi=300)
 
     count += 1
