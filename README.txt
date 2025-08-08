@@ -6,6 +6,8 @@
 
 003: Pynbody image generator
 
-004: Cluster shock wave plot
+004: Cluster shock wave plot; Mach calculator
 
 005: Glnemo2 frames generator
+
+006: Pynbody plot manipulator
