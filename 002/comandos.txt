@@ -1,0 +1,3 @@
+Rodar o código: 
+python3 snapshotJoinerMk2/snapshotJoinerMk2.py ../hdf5/snapshot_0005.hdf5 ../hdf5/snapshot_0006.hdf5 -o join_0005_0006_100.hdf5 --relative-position 1500 0 0 --relative-velocity -100 0 0
+

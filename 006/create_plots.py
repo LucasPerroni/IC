@@ -7,8 +7,9 @@ import matplotlib.colors as clrs
 from matplotlib.ticker import MultipleLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-IMAGE_PATH = "/home/lucasbondep/ic_astronomia/main/003/frames/"
-SNAPSHOT_PATH = "/mnt/d/IC/snapshots/"
+SNAPSHOT_CODE = "0005_0006_2000/"
+SNAPSHOT_PATH = "/mnt/d/IC/snapshots/" + SNAPSHOT_CODE
+IMAGE_PATH = "/home/lucasbondep/ic_astronomia/main/006/plots/" + SNAPSHOT_CODE
 
 class bcolors:
     HEADER = '\033[95m'
@@ -29,8 +30,8 @@ for i in range(len(lines)):
 
 count = 0
 for file in snapshots:
-    if count < 8 or count > 11:
-    # if count != 9:
+    if (count > 50) | (count < 40):
+    # if (count < 90):
         count += 1
         continue
 
@@ -57,13 +58,14 @@ for file in snapshots:
     plt.rcParams['ytick.major.width'] = 0.75
     plt.rcParams['ytick.minor.width'] = 0.5
 
-    width = 1500 # Unit: kpc
+    width = 1800 # Unit: kpc
 
     # DATA -----------------------------------------------------------------------------------------
     df = pynbody.load(file)
     df.physical_units()
     
     s = h5py.File(file, 'r')
+
     time_snapshot = s['Header'].attrs[u'Time'] # Gyr
     # time_snapshot = df.properties['time'].in_units('Gyr') # Unit: Gyr
 
@@ -90,14 +92,15 @@ for file in snapshots:
 
     # Constrói o plot manualmente
     extent = (-width/2, width/2, -width/2, width/2)
-    norm = clrs.LogNorm(vmin=2e-28, vmax=3e-25)
+    norm = clrs.LogNorm(vmin=1e-28, vmax=5e-26)
     im = ax.imshow(im_array, cmap="twilight", extent=extent, norm=norm)
+    ax.invert_xaxis()
 
     fig.subplots_adjust(left=0.15, bottom=0.075, top=0.925, right=0.81, hspace=0.00, wspace=0.0)
     ax.set_xlabel(r'$x$ (kpc)')
     ax.set_ylabel(r'$y$ (kpc)')
     ax.set_aspect('equal')
-    ax.annotate(f'Time = {np.around(time_snapshot, 2)} Gyr', xy=(-width/2.3, width/2.3), 
+    ax.annotate(f'Time = {np.around(time_snapshot, 3)} Gyr', xy=(-width/3.5, width/2.3), 
                 color='black', zorder=4, fontsize=8)
 
     divider = make_axes_locatable(ax)
@@ -105,7 +108,7 @@ for file in snapshots:
     cb = plt.colorbar(im, cax=cax)
     cb.set_label(r'$\log \, \rho \;$ (g cm$^{-3}) $', labelpad=8)
 
-    plt.savefig(f'plots/density_{count:03d}.png', dpi=300)
+    plt.savefig(f'{IMAGE_PATH}density_{count:03d}.png', dpi=300)
 
     # TEMPERATURE ----------------------------------------------------------------------------------
     fig, ax = plt.subplots(nrows=1, ncols=1)
@@ -122,14 +125,15 @@ for file in snapshots:
 
     # Constrói o plot manualmente
     extent = (-width/2, width/2, -width/2, width/2)
-    norm = clrs.Normalize(vmin=0, vmax=40)
+    norm = clrs.Normalize(vmin=0, vmax=12)
     im = ax.imshow(im_array, cmap="inferno", extent=extent, norm=norm)
+    ax.invert_xaxis()
 
     fig.subplots_adjust(left=0.15, bottom=0.075, top=0.925, right=0.81, hspace=0.00, wspace=0.0)
     ax.set_xlabel(r'$x$ (kpc)')
     ax.set_ylabel(r'$y$ (kpc)')
     ax.set_aspect('equal')
-    ax.annotate(f'Time = {np.around(time_snapshot, 2)} Gyr', xy=(-width/2.3, width/2.3), 
+    ax.annotate(f'Time = {np.around(time_snapshot, 3)} Gyr', xy=(-width/3.5, width/2.3), 
                 color='white', zorder=4, fontsize=8)
 
     divider = make_axes_locatable(ax)
@@ -137,6 +141,6 @@ for file in snapshots:
     cb = plt.colorbar(im, cax=cax)
     cb.set_label(r'$kT$ (keV)', labelpad=8)
 
-    plt.savefig(f'plots/temperature_{count:03d}.png', dpi=300)
+    plt.savefig(f'{IMAGE_PATH}temperature_{count:03d}.png', dpi=300)
 
     count += 1

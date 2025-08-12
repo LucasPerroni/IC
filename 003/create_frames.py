@@ -1,8 +1,9 @@
 import pynbody
 import matplotlib.pyplot as plt
 
-IMAGE_PATH = "/home/lucasbondep/ic_astronomia/main/003/frames/"
-SNAPSHOT_PATH = "/mnt/d/IC/snapshots/"
+SNAPSHOT_CODE = "0005_0006_100/"
+IMAGE_PATH = "/home/lucasbondep/ic_astronomia/main/003/frames/" + SNAPSHOT_CODE
+SNAPSHOT_PATH = "/mnt/d/IC/snapshots/" + SNAPSHOT_CODE
 
 class bcolors:
     HEADER = '\033[95m'
@@ -23,8 +24,8 @@ for i in range(len(lines)):
 
 count = 0
 for file in snapshots:
-    if count < 8 or count > 11:
-    # if count != 9:
+    # if count < 8 or count > 11:
+    if count < 90:
         count += 1
         continue
 
@@ -38,12 +39,15 @@ for file in snapshots:
     s.gas["kT"] = (s.gas["u"] * (2 * mi * Mh) / 3) * 6.241506 * 10**15 * 10**(6)
 
     # pynbody.plot.image(s.dm, qty="rho", width=8000, cmap="twilight", vmin=1e-9, vmax=1e9)
-    # plt.savefig(f"{IMAGE_PATH}dm/dm_{count:03d}.png", bbox_inches="tight", dpi=300)
+    # plt.savefig(f"{IMAGE_PATH}dm_{count:03d}.png", bbox_inches="tight", dpi=300)
 
     # pynbody.plot.image(s.gas, qty="rho", width=8000, cmap="inferno", vmin=1e0, vmax=1e7)
     # plt.savefig(f"{IMAGE_PATH}gas/gas_{count:03d}.png", bbox_inches="tight", dpi=300)
 
-    pynbody.plot.image(s.gas, qty="kT", width=2000, cmap="twilight", log=False, vmin=0, vmax=40, denoise=True, colorbar_label="kT (keV)")
-    plt.savefig(f"{IMAGE_PATH}gas/temp_{count:03d}.png", bbox_inches="tight", dpi=300)
+    vmax = 13 # 0005_0006_100
+    # vmax = 13 # 0005_0006_1000
+    # vmax = 15 # 0005_0006_2000
+    pynbody.plot.image(s.gas, qty="kT", width=6000, cmap="inferno", log=False, vmin=0, vmax=vmax, denoise=True, colorbar_label="kT (keV)")
+    plt.savefig(f"{IMAGE_PATH}temp_{count:03d}.png", bbox_inches="tight", dpi=300)
 
     count += 1
