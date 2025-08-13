@@ -200,15 +200,15 @@ if PLOT_INFOS:
     ax.plot(x_ajuste, y_ajuste, color="lightblue", label="Ajuste linear")
     ax.set_xlabel("t (Gyr)")
     ax.set_ylabel("x (kpc)")
-    ax.set_title(f"Posição da Descontinuidade x Tempo - Velocidade: {a:.2f} km/s")
+    ax.set_title(f"Posição da Descontinuidade x Tempo - Velocidade: {a*0.9778:.2f} km/s")
     plt.savefig(f"{IMAGE_PATH}pos-time.png")
 
     # Print dos outputs
-    print(f"Velocidade da onda: {a:.2f} km/s")
+    print(f"Velocidade da onda: {a*0.9778:.2f} km/s")
     print(f"Velocidade do som não chocado: {np.mean(velocities['cs']):.2f} km/s")
     print(f"Velocidade das particulas não chocadas: {np.mean(velocities['u']):.2f} km/s")
 
-    mach_v = (a - np.mean(velocities['u'])) / np.mean(velocities['cs'])
+    mach_v = (a*0.9778 - np.mean(velocities['u'])) / np.mean(velocities['cs'])
     print(f"Mach pela velocidade: {mach_v:.2f} \n")
 
     for i in range(len(machs["time"])):
