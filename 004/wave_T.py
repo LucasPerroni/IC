@@ -85,12 +85,14 @@ for i in range(len(lines)):
     limit_yz = (y > -100) & (y < 100) & (z > -100) & (z < 100)
 
     # Calcular kT para o plot de temperatura
-    interacoes = 160
+    interacoes = 200
     if FULL_PLOT:
-        length = max(x) - min(x)
+        lim_sup = 1000
+        lim_inf = -1000
+        length = lim_sup - lim_inf
         for j in range(interacoes):
-            x1 = min(x) + (j * length / interacoes)
-            x2 = min(x) + ((j + 1) * length / interacoes)
+            x1 = lim_inf + (j * length / interacoes)
+            x2 = lim_inf + ((j + 1) * length / interacoes)
             cond = (x > x1) & (x < x2) & limit_yz
 
             u = np.mean(u_tot[cond])
@@ -177,17 +179,22 @@ for i in range(len(lines)):
     ax.set_ylabel('$kT$ ($keV$)')
     ax.set_xlabel('$x$ ($kpc$)')
     if FULL_PLOT:
-        ax.set_xlim(-3000, 3000)
+        ax.set_xlim(lim_inf, lim_sup)
+        ax.axhline(y=max(kT_plot), color='g', linestyle='--', alpha=0.5, 
+                   label=f'Maior temperatura: {max(kT_plot):.2f}')
     else:
         ax.set_xlim(200, 1000)
-    ax.set_ylim(0, 10)
-    ax.set_aspect('auto')
+        ax.set_ylim(0, 10)
     if PLOT_INFOS:
         ax.axhline(y=kT_plot[idx_maior], color='g', linestyle='--', alpha=0.5, label=f'T2')
         ax.axhline(y=kT_plot[idx_menor], color='purple', linestyle='--', alpha=0.5, label=f'T1')
         ax.axvline(x=x_plot[idx], color='r', linestyle='--', alpha=0.5, label=f'Descontinuidade')
+    ax.set_aspect('auto')
     ax.legend()
-    plt.savefig(f"{IMAGE_PATH}t-r_{i:03d}.png")
+    if FULL_PLOT:
+        plt.savefig(f"{IMAGE_PATH}full_plot/t-r_{i:03d}.png")
+    else:
+        plt.savefig(f"{IMAGE_PATH}t-r_{i:03d}.png")
 
 if PLOT_INFOS:
     # Ajuste linear a curva de posição pelo tempo

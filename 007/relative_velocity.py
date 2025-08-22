@@ -27,7 +27,7 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-SNAPSHOT_CODE = "0005_0006_100/"
+SNAPSHOT_CODE = "0005_0006_2000/"
 SNAPSHOT_PATH = "/mnt/d/IC/snapshots/" + SNAPSHOT_CODE
 IMAGE_PATH = "plots/" + SNAPSHOT_CODE
 MACH_ANALISYS = True
@@ -45,12 +45,15 @@ sim_time = []
 dist_prev = None
 shock_detected = False
 if MACH_ANALISYS:
-    s_init, s_end = 90, 100 # 0005_0006_100
+    # s_init, s_end = 90, 100 # 0005_0006_100
     # s_init, s_end = 60, 70 # 0005_0006_1000
-    # s_init, s_end = 40, 50 # 0005_0006_2000
+    s_init, s_end = 40, 50 # 0005_0006_2000
 
 lines = open(SNAPSHOT_PATH + "snapshot.txt", "r").readlines()
 for i in range(len(lines)):
+    # if i % 3 != 0:
+    #     continue
+
     print(f"{bcolors.OKGREEN}Plotting snapshot {i:03d} of {len(lines) - 1:03d}...{bcolors.ENDC}")
     snapshot = f"{SNAPSHOT_PATH}snapshot_{i:03d}.hdf5"
     s = h5py.File(snapshot, 'r')
@@ -127,11 +130,18 @@ ax.set_title(f"Distância entre os centros")
 ax.set_ylabel('$x$ ($kpc$)')
 ax.set_xlabel('$t$ ($Gyr$)')
 ax.set_aspect('auto')
+if MACH_ANALISYS:
+    ax.axvline(analised_timestamp['time_init'], linestyle='--', color="#aba9a9", alpha=0.2)
+    ax.axvline(analised_timestamp['time_end'], linestyle='--', color="#aba9a9", alpha=0.2)
+    ax.axvspan(analised_timestamp['time_init'], analised_timestamp['time_end'], facecolor='#aba9a9', alpha=0.2, label="Área de análise do Número de Mach")
 ax.legend()
+plt.tight_layout()
 plt.savefig(f"{IMAGE_PATH}dist.png")
 
 # ---- Plot Velocidade x Tempo
 velocity = np.gradient(dist_smooth, sim_time)*0.9778 # kpc/gyr -> km/s
+cond = (sim_time >= analised_timestamp['time_init']) & (sim_time <= analised_timestamp['time_end'])
+analised_v = np.mean(velocity[cond])
 
 fig, ax = plt.subplots(figsize=(8, 6))
 ax.plot(sim_time, velocity, '.', ms = 4, mec = pontos, mfc = pontos, label='Velocidade relativa')
@@ -139,11 +149,14 @@ ax.set_title(f"Velocidade Relativa x Tempo")
 ax.set_ylabel('$vx$ ($km/s$)')
 ax.set_xlabel('$t$ ($Gyr$)')
 ax.set_aspect('auto')
-ax.axhline(0, linestyle='--', color="black", alpha=0.5, label='0 km/s')
+ax.axhline(0, linestyle='-', color="#999797", alpha=0.2)
+ax.axhline(analised_v, ls='-', color="#363636", alpha=0.2, label="Velocidade relativa média na análise de Mach")
 if MACH_ANALISYS:
-    ax.axvline(analised_timestamp['time_init'], linestyle='--', color="green", alpha=0.5, label='Início da análise de Mach')
-    ax.axvline(analised_timestamp['time_end'], linestyle='--', color="red", alpha=0.5, label='Fim da análise de Mach')
+    ax.axvline(analised_timestamp['time_init'], linestyle='--', color="#aba9a9", alpha=0.2)
+    ax.axvline(analised_timestamp['time_end'], linestyle='--', color="#aba9a9", alpha=0.2)
+    ax.axvspan(analised_timestamp['time_init'], analised_timestamp['time_end'], facecolor='#aba9a9', alpha=0.2, label="Área de análise do Número de Mach")
 ax.legend()
+plt.tight_layout()
 plt.savefig(f"{IMAGE_PATH}vel-time.png")
 
 # ---- Plot Velocidade x Distância
@@ -154,9 +167,14 @@ ax.set_title(f"Velocidade Relativa x Distância entre os centros")
 ax.set_ylabel('$vx$ ($km/s$)')
 ax.set_xlabel('$x$ ($kpc$)')
 ax.set_aspect('auto')
-ax.axhline(0, linestyle='--', color="black", alpha=0.5, label='0 km/s')
+ax.axhline(0, linestyle='-', color="#999797", alpha=0.2)
+ax.axhline(analised_v, ls='-', color="#363636", alpha=0.2, label="Velocidade relativa média na análise de Mach")
 if MACH_ANALISYS:
-    ax.axvline(analised_timestamp['dist_init'], linestyle='--', color="green", alpha=0.5, label='Início da análise de Mach')
-    ax.axvline(analised_timestamp['dist_end'], linestyle='--', color="red", alpha=0.5, label='Fim da análise de Mach')
+    ax.axvline(analised_timestamp['dist_init'], linestyle='--', color="#aba9a9", alpha=0.2)
+    ax.axvline(analised_timestamp['dist_end'], linestyle='--', color="#aba9a9", alpha=0.2)
+    ax.axvspan(analised_timestamp['dist_init'], analised_timestamp['dist_end'], facecolor='#aba9a9', alpha=0.2, label="Área de análise do Número de Mach")
 ax.legend()
+plt.tight_layout()
 plt.savefig(f"{IMAGE_PATH}vel-pos.png")
+
+print(f"Velocidade média: {analised_v:.4f}")
