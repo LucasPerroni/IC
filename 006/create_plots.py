@@ -8,7 +8,7 @@ from matplotlib.ticker import MultipleLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 SNAPSHOT_CODE = "0005_0006_2000/"
-SNAPSHOT_PATH = "/mnt/d/IC/snapshots/" + SNAPSHOT_CODE
+SNAPSHOT_PATH = "/mnt/d/UFPR/IC/snapshots/" + SNAPSHOT_CODE
 IMAGE_PATH = "/home/lucasbondep/ic_astronomia/main/006/plots/" + SNAPSHOT_CODE
 
 class bcolors:
@@ -29,8 +29,11 @@ for i in range(len(lines)):
     snapshots.append(file)
 
 count = 0
+# s_init, s_end = 90, 100 # 0005_0006_100
+# s_init, s_end = 60, 70 # 0005_0006_1000
+s_init, s_end = 40, 50 # 0005_0006_2000
 for file in snapshots:
-    if (count > 50) | (count < 40):
+    if (count > s_end) | (count < s_init):
     # if (count < 90):
         count += 1
         continue
@@ -40,8 +43,8 @@ for file in snapshots:
     # ----------------------------------------------------------------------------------------------
 
     plt.rcParams['figure.figsize'  ] = (7, 6)
-    plt.rcParams['font.size'       ] = 10
-    plt.rcParams['legend.fontsize' ] = 10
+    plt.rcParams['font.size'       ] = 16
+    plt.rcParams['legend.fontsize' ] = 16
     plt.rcParams['legend.frameon'  ] = False
     plt.rcParams['font.family'     ] = 'STIXGeneral'
     plt.rcParams['mathtext.fontset'] = 'stix'
@@ -100,8 +103,8 @@ for file in snapshots:
     ax.set_xlabel(r'$x$ (kpc)')
     ax.set_ylabel(r'$y$ (kpc)')
     ax.set_aspect('equal')
-    ax.annotate(f'Time = {np.around(time_snapshot, 3)} Gyr', xy=(-width/3.5, width/2.3), 
-                color='black', zorder=4, fontsize=8)
+    ax.annotate(f'{np.around(time_snapshot, 3)} Gyr', xy=(-width/3.5, width/2.3), 
+                color='black', zorder=4, fontsize=16)
 
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="3.5%", pad=0.1)
@@ -133,8 +136,8 @@ for file in snapshots:
     ax.set_xlabel(r'$x$ (kpc)')
     ax.set_ylabel(r'$y$ (kpc)')
     ax.set_aspect('equal')
-    ax.annotate(f'Time = {np.around(time_snapshot, 3)} Gyr', xy=(-width/3.5, width/2.3), 
-                color='white', zorder=4, fontsize=8)
+    ax.annotate(f'{np.around(time_snapshot, 3)} Gyr', xy=(-width/3.5, width/2.3), 
+                color='white', zorder=4, fontsize=16)
 
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="3.5%", pad=0.1)

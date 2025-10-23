@@ -38,11 +38,12 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-SNAPSHOT_CODE = "0005_0006_2000/"
-SNAPSHOT_PATH = "/mnt/d/IC/snapshots/" + SNAPSHOT_CODE
+SNAPSHOT_CODE = "0005_0006_100/"
+SNAPSHOT_PATH = "/mnt/d/UFPR/IC/snapshots/" + SNAPSHOT_CODE
 IMAGE_PATH = "plot/" + SNAPSHOT_CODE
 PLOT_INFOS = True
 FULL_PLOT = not PLOT_INFOS
+FONT_SIZE = 14
 
 mi = 0.6 # Average molecular weight
 Mh = 1.67262192 * 10**(-27) # Proton mass in kg
@@ -56,8 +57,11 @@ dxdt = {"x": [], "t": []} # objeto para plotar a posição da descontinuidade pe
 velocities = {"cs": [], "u": []} # objeto para calcular o número de mach pela velocidade
 machs = {"time": [], "mach": []} # objeto para guardar os machs calculados por T2/T1
 lines = open(SNAPSHOT_PATH + "snapshot.txt", "r").readlines()
+s_init, s_end = 90, 100 # 0005_0006_100
+# s_init, s_end = 60, 70 # 0005_0006_1000
+# s_init, s_end = 40, 50 # 0005_0006_2000
 for i in range(len(lines)):
-    if (i < 40) | (i > 50):
+    if (i < s_init) | (i > s_end):
         continue
 
     print(f"{bcolors.OKGREEN}Plotting snapshot {i:03d} of {len(lines) - 1:03d}...{bcolors.ENDC}")
@@ -85,7 +89,9 @@ for i in range(len(lines)):
     limit_yz = (y > -100) & (y < 100) & (z > -100) & (z < 100)
 
     # Calcular kT para o plot de temperatura
-    interacoes = 200
+    interacoes = 145 # 0005_0006_100
+    # interacoes = 178 # 0005_0006_1000
+    # interacoes = 110 # 0005_0006_2000
     if FULL_PLOT:
         lim_sup = 1000
         lim_inf = -1000
@@ -119,7 +125,8 @@ for i in range(len(lines)):
         sep = 18 # numero de pontos entre T1/T2 e a descontinuidade
 
         x_plot = np.array(x_plot)
-        mask_range = (x_plot > 300) & (x_plot < 840)
+        mask_range = (x_plot > 300) & (x_plot < 660) # 0005_0006_100
+        # mask_range = (x_plot > 300) & (x_plot < 840) # Resto
         grad_kT = np.full_like(kT_plot, 0, dtype=float)
         grad_kT[mask_range] = np.gradient(kT_plot[mask_range], x_plot[mask_range])
 
@@ -145,18 +152,19 @@ for i in range(len(lines)):
         velocities['cs'].append(cs)
         velocities['u'].append(u)
 
-        fig, ax = plt.subplots(figsize=(8, 6))
-        ax.plot(x[plot_limit], vx[plot_limit], ".", markersize=1.2)
-        ax.set_title(f"Velocity x Radius - {time:.3f} Gyr")
-        ax.set_ylabel("velocity (km/s)")
-        ax.set_xlabel("x (kpc)")
-        ax.axvline(x=x_nao_chocado, color="y", linestyle="--", alpha=0.5, label="Não Chocado")
-        ax.axvline(x=x_plot[idx], color="black", linestyle="--", alpha=0.5, label="Descontinuidade")
-        ax.axhline(y=0, color='r', linestyle='--', alpha=0.5, label="0 km/s")
-        ax.set_xlim(200, 1200)
-        ax.set_ylim(-600, 1800)
-        ax.legend()
-        plt.savefig(f"{IMAGE_PATH}x_vx_{i:03d}.png")
+        # fig, ax = plt.subplots(figsize=(8, 6))
+        # ax.plot(x[plot_limit], vx[plot_limit], ".", markersize=1.2)
+        # # ax.set_title(f"Velocity x Radius - {time:.3f} Gyr")
+        # ax.set_ylabel("velocity (km/s)")
+        # ax.set_xlabel("x (kpc)")
+        # ax.axvline(x=x_nao_chocado, color="y", linestyle="--", alpha=0.5, label="Não Chocado")
+        # ax.axvline(x=x_plot[idx], color="black", linestyle="--", alpha=0.5, label="Descontinuidade")
+        # ax.axhline(y=0, color='r', linestyle='--', alpha=0.5, label="0 km/s")
+        # ax.set_xlim(200, 1200)
+        # ax.set_ylim(-600, 1800)
+        # ax.legend()
+        # plt.tight_layout()
+        # plt.savefig(f"{IMAGE_PATH}x_vx_{i:03d}.png")
 
         # Calculando número de Mach
         if T1 == 0.0:
@@ -174,10 +182,11 @@ for i in range(len(lines)):
 
     # Plot individual
     fig, ax = plt.subplots(figsize=(8, 6))
-    ax.plot(x_plot, kT_plot, '.', ms = 4, mec = pontos, mfc = pontos, label='Temperature from Snapshot')
-    ax.set_title(f"Temperature x Radius - {time:.3f} Gyr")
-    ax.set_ylabel('$kT$ ($keV$)')
-    ax.set_xlabel('$x$ ($kpc$)')
+    ax.plot(x_plot, kT_plot, '.', ms = 4, mec = pontos, mfc = pontos, label='Temperatura das partículas')
+    # ax.set_title(f"Temperature x Radius - {time:.3f} Gyr")
+    ax.set_ylabel('$kT$ (keV)', fontsize=FONT_SIZE)
+    ax.set_xlabel('$x$ (kpc)', fontsize=FONT_SIZE)
+    ax.tick_params(axis='both', labelsize=FONT_SIZE)
     if FULL_PLOT:
         ax.set_xlim(lim_inf, lim_sup)
         ax.axhline(y=max(kT_plot), color='g', linestyle='--', alpha=0.5, 
@@ -186,11 +195,19 @@ for i in range(len(lines)):
         ax.set_xlim(200, 1000)
         ax.set_ylim(0, 10)
     if PLOT_INFOS:
-        ax.axhline(y=kT_plot[idx_maior], color='g', linestyle='--', alpha=0.5, label=f'T2')
-        ax.axhline(y=kT_plot[idx_menor], color='purple', linestyle='--', alpha=0.5, label=f'T1')
-        ax.axvline(x=x_plot[idx], color='r', linestyle='--', alpha=0.5, label=f'Descontinuidade')
+        # ax.axhline(y=kT_plot[idx_maior], color='g', linestyle='--', alpha=0.2, label=f'T2')
+        # ax.axhline(y=kT_plot[idx_menor], color='purple', linestyle='--', alpha=0.2, label=f'T1')
+        ax.axvline(x=x_plot[idx], ls='-', color="#363636", alpha=0.2, label=f'Descontinuidade')
     ax.set_aspect('auto')
-    ax.legend()
+    # ax.legend(loc="upper right", fontsize=FONT_SIZE)
+    plt.text(
+        0.98, 0.98,           # posição (x, y) em coordenadas relativas ao eixo
+        f"{time:.3f} Gyr",       # texto
+        transform=plt.gca().transAxes,  # garante que a posição é relativa ao gráfico
+        ha="right", va="top", # alinhamento
+        color="#363636", fontsize=FONT_SIZE, bbox=dict(facecolor="white", alpha=0.7, edgecolor="none") # fundo branco sem borda
+    )
+    plt.tight_layout()
     if FULL_PLOT:
         plt.savefig(f"{IMAGE_PATH}full_plot/t-r_{i:03d}.png")
     else:
@@ -205,9 +222,12 @@ if PLOT_INFOS:
     fig, ax = plt.subplots(figsize=(8, 6))
     ax.plot(dxdt['t'], dxdt["x"], ".", label="Posição da descontinuidade")
     ax.plot(x_ajuste, y_ajuste, color="lightblue", label="Ajuste linear")
-    ax.set_xlabel("t (Gyr)")
-    ax.set_ylabel("x (kpc)")
-    ax.set_title(f"Posição da Descontinuidade x Tempo - Velocidade: {a*0.9778:.2f} km/s")
+    ax.set_xlabel("$t$ (Gyr)", fontsize=FONT_SIZE)
+    ax.set_ylabel("$x$ (kpc)", fontsize=FONT_SIZE)
+    ax.tick_params(axis='both', labelsize=FONT_SIZE)
+    # ax.set_title(f"Posição da Descontinuidade x Tempo - Velocidade: {a*0.9778:.2f} km/s")
+    # ax.legend(loc="lower right", fontsize=FONT_SIZE)
+    plt.tight_layout()
     plt.savefig(f"{IMAGE_PATH}pos-time.png")
 
     # Print dos outputs

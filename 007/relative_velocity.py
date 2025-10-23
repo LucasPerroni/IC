@@ -27,10 +27,11 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-SNAPSHOT_CODE = "0005_0006_2000/"
-SNAPSHOT_PATH = "/mnt/d/IC/snapshots/" + SNAPSHOT_CODE
+SNAPSHOT_CODE = "0005_0006_100/"
+SNAPSHOT_PATH = "/mnt/d/UFPR/IC/snapshots/" + SNAPSHOT_CODE
 IMAGE_PATH = "plots/" + SNAPSHOT_CODE
 MACH_ANALISYS = True
+FONT_SIZE = 14
 
 # cores
 pontos = '#4772FF'
@@ -45,9 +46,9 @@ sim_time = []
 dist_prev = None
 shock_detected = False
 if MACH_ANALISYS:
-    # s_init, s_end = 90, 100 # 0005_0006_100
+    s_init, s_end = 90, 100 # 0005_0006_100
     # s_init, s_end = 60, 70 # 0005_0006_1000
-    s_init, s_end = 40, 50 # 0005_0006_2000
+    # s_init, s_end = 40, 50 # 0005_0006_2000
 
 lines = open(SNAPSHOT_PATH + "snapshot.txt", "r").readlines()
 for i in range(len(lines)):
@@ -104,21 +105,23 @@ for i in range(len(lines)):
 # ---- Plots Cluster 1
 fig, ax = plt.subplots(figsize=(8, 6))
 ax.plot(sim_time, cluster_1['x'], '.', ms = 4, mec = pontos, mfc = pontos, label='Centro do cluster')
-ax.set_title(f"Centro do Cluster 1 x Tempo")
-ax.set_ylabel('$x$ ($kpc$)')
-ax.set_xlabel('$t$ ($Gyr$)')
+# ax.set_title(f"Centro do Cluster 1 x Tempo")
+ax.set_ylabel('$x$ (kpc)', fontsize=FONT_SIZE)
+ax.set_xlabel('$t$ (Gyr)', fontsize=FONT_SIZE)
+ax.tick_params(axis='both', labelsize=FONT_SIZE)
 ax.set_aspect('auto')
-ax.legend()
+# ax.legend()
 plt.savefig(f"{IMAGE_PATH}pos-time-1.png")
 
 # ---- Plots Cluster 2
 fig, ax = plt.subplots(figsize=(8, 6))
 ax.plot(sim_time, cluster_2['x'], '.', ms = 4, mec = pontos, mfc = pontos, label='Centro do cluster')
-ax.set_title(f"Centro do Cluster 2 x Tempo")
-ax.set_ylabel('$x$ ($kpc$)')
-ax.set_xlabel('$t$ ($Gyr$)')
+# ax.set_title(f"Centro do Cluster 2 x Tempo")
+ax.set_ylabel('$x$ (kpc)', fontsize=FONT_SIZE)
+ax.set_xlabel('$t$ (Gyr)', fontsize=FONT_SIZE)
+ax.tick_params(axis='both', labelsize=FONT_SIZE)
 ax.set_aspect('auto')
-ax.legend()
+# ax.legend()
 plt.savefig(f"{IMAGE_PATH}pos-time-2.png")
 
 # ---- Plot Distância entre Clusters
@@ -126,15 +129,16 @@ dist_smooth = savgol_filter(distance_between['dist'], window_length=9, polyorder
 
 fig, ax = plt.subplots(figsize=(8, 6))
 ax.plot(sim_time, dist_smooth, '.', ms = 4, mec = pontos, mfc = pontos, label='Distância absoluta')
-ax.set_title(f"Distância entre os centros")
-ax.set_ylabel('$x$ ($kpc$)')
-ax.set_xlabel('$t$ ($Gyr$)')
+# ax.set_title(f"Distância entre os centros")
+ax.set_ylabel('$x$ (kpc)', fontsize=FONT_SIZE)
+ax.set_xlabel('$t$ (Gyr)', fontsize=FONT_SIZE)
+ax.tick_params(axis='both', labelsize=FONT_SIZE)
 ax.set_aspect('auto')
 if MACH_ANALISYS:
     ax.axvline(analised_timestamp['time_init'], linestyle='--', color="#aba9a9", alpha=0.2)
     ax.axvline(analised_timestamp['time_end'], linestyle='--', color="#aba9a9", alpha=0.2)
-    ax.axvspan(analised_timestamp['time_init'], analised_timestamp['time_end'], facecolor='#aba9a9', alpha=0.2, label="Área de análise do Número de Mach")
-ax.legend()
+    ax.axvspan(analised_timestamp['time_init'], analised_timestamp['time_end'], facecolor='#aba9a9', alpha=0.2, label="Intervalo de análise do Número de Mach")
+# ax.legend(loc="upper left", fontsize=FONT_SIZE)
 plt.tight_layout()
 plt.savefig(f"{IMAGE_PATH}dist.png")
 
@@ -145,17 +149,18 @@ analised_v = np.mean(velocity[cond])
 
 fig, ax = plt.subplots(figsize=(8, 6))
 ax.plot(sim_time, velocity, '.', ms = 4, mec = pontos, mfc = pontos, label='Velocidade relativa')
-ax.set_title(f"Velocidade Relativa x Tempo")
-ax.set_ylabel('$vx$ ($km/s$)')
-ax.set_xlabel('$t$ ($Gyr$)')
+# ax.set_title(f"Velocidade Relativa x Tempo")
+ax.set_ylabel('$vx$ (km/s)', fontsize=FONT_SIZE)
+ax.set_xlabel('$t$ (Gyr)', fontsize=FONT_SIZE)
+ax.tick_params(axis='both', labelsize=FONT_SIZE)
 ax.set_aspect('auto')
-ax.axhline(0, linestyle='-', color="#999797", alpha=0.2)
+ax.axhline(0, linestyle='--', color="#999797", alpha=0.2)
 ax.axhline(analised_v, ls='-', color="#363636", alpha=0.2, label="Velocidade relativa média na análise de Mach")
 if MACH_ANALISYS:
     ax.axvline(analised_timestamp['time_init'], linestyle='--', color="#aba9a9", alpha=0.2)
     ax.axvline(analised_timestamp['time_end'], linestyle='--', color="#aba9a9", alpha=0.2)
-    ax.axvspan(analised_timestamp['time_init'], analised_timestamp['time_end'], facecolor='#aba9a9', alpha=0.2, label="Área de análise do Número de Mach")
-ax.legend()
+    ax.axvspan(analised_timestamp['time_init'], analised_timestamp['time_end'], facecolor='#aba9a9', alpha=0.2, label="Intervalo de análise do Número de Mach")
+# ax.legend(loc="lower right", fontsize=FONT_SIZE)
 plt.tight_layout()
 plt.savefig(f"{IMAGE_PATH}vel-time.png")
 
@@ -163,17 +168,18 @@ plt.savefig(f"{IMAGE_PATH}vel-time.png")
 dist_signed = np.sign(np.array(cluster_1['x']) - np.array(cluster_2['x'])) * dist_smooth
 fig, ax = plt.subplots(figsize=(8, 6))
 ax.plot(dist_signed, velocity, '.', ms = 4, mec = pontos, mfc = pontos, label='Velocidade relativa')
-ax.set_title(f"Velocidade Relativa x Distância entre os centros")
-ax.set_ylabel('$vx$ ($km/s$)')
-ax.set_xlabel('$x$ ($kpc$)')
+# ax.set_title(f"Velocidade Relativa x Distância entre os centros")
+ax.set_ylabel('$vx$ (km/s)', fontsize=FONT_SIZE)
+ax.set_xlabel('$x$ (kpc)', fontsize=FONT_SIZE)
+ax.tick_params(axis='both', labelsize=FONT_SIZE)
 ax.set_aspect('auto')
-ax.axhline(0, linestyle='-', color="#999797", alpha=0.2)
+ax.axhline(0, linestyle='--', color="#999797", alpha=0.2)
 ax.axhline(analised_v, ls='-', color="#363636", alpha=0.2, label="Velocidade relativa média na análise de Mach")
 if MACH_ANALISYS:
     ax.axvline(analised_timestamp['dist_init'], linestyle='--', color="#aba9a9", alpha=0.2)
     ax.axvline(analised_timestamp['dist_end'], linestyle='--', color="#aba9a9", alpha=0.2)
-    ax.axvspan(analised_timestamp['dist_init'], analised_timestamp['dist_end'], facecolor='#aba9a9', alpha=0.2, label="Área de análise do Número de Mach")
-ax.legend()
+    ax.axvspan(analised_timestamp['dist_init'], analised_timestamp['dist_end'], facecolor='#aba9a9', alpha=0.2, label="Intervalo de análise do Número de Mach")
+# ax.legend(loc="lower right", fontsize=FONT_SIZE)
 plt.tight_layout()
 plt.savefig(f"{IMAGE_PATH}vel-pos.png")
 
