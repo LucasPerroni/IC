@@ -1,9 +1,9 @@
 import pynbody
 import matplotlib.pyplot as plt
 
-SNAPSHOT_CODE = "0005_0006_100/"
+SNAPSHOT_CODE = "0005_0006_3000/"
 IMAGE_PATH = "/home/lucasbondep/ic_astronomia/main/003/frames/" + SNAPSHOT_CODE
-SNAPSHOT_PATH = "/mnt/d/IC/snapshots/" + SNAPSHOT_CODE
+SNAPSHOT_PATH = "/mnt/d/UFPR/IC/snapshots/" + SNAPSHOT_CODE
 
 class bcolors:
     HEADER = '\033[95m'
@@ -25,9 +25,9 @@ for i in range(len(lines)):
 count = 0
 for file in snapshots:
     # if count < 8 or count > 11:
-    if count < 90:
-        count += 1
-        continue
+    # if count < 90:
+    #     count += 1
+    #     continue
 
     print(f"{bcolors.OKGREEN}Generating frame {count} of {len(lines) - 1:03d}...{bcolors.ENDC}")
     
@@ -38,16 +38,18 @@ for file in snapshots:
     Mh = 1.67262192 * 10**(-27) # Proton mass in kg
     s.gas["kT"] = (s.gas["u"] * (2 * mi * Mh) / 3) * 6.241506 * 10**15 * 10**(6)
 
-    # pynbody.plot.image(s.dm, qty="rho", width=8000, cmap="twilight", vmin=1e-9, vmax=1e9)
-    # plt.savefig(f"{IMAGE_PATH}dm_{count:03d}.png", bbox_inches="tight", dpi=300)
+    pynbody.plot.image(s.dm, qty="rho", units="g cm^-3", width=8000, cmap="twilight", vmin=2e-28, vmax=3e-25)
+    plt.savefig(f"{IMAGE_PATH}dm_{count:03d}.png", bbox_inches="tight", dpi=300)
 
     # pynbody.plot.image(s.gas, qty="rho", width=8000, cmap="inferno", vmin=1e0, vmax=1e7)
     # plt.savefig(f"{IMAGE_PATH}gas/gas_{count:03d}.png", bbox_inches="tight", dpi=300)
 
-    vmax = 13 # 0005_0006_100
-    # vmax = 13 # 0005_0006_1000
-    # vmax = 15 # 0005_0006_2000
+    # vmax = 13 # 0005_0006_100 e 0005_0006_1000
+    vmax = 15 # 0005_0006_2000 e 0005_0006_3000
     pynbody.plot.image(s.gas, qty="kT", width=6000, cmap="inferno", log=False, vmin=0, vmax=vmax, denoise=True, colorbar_label="kT (keV)")
     plt.savefig(f"{IMAGE_PATH}temp_{count:03d}.png", bbox_inches="tight", dpi=300)
 
     count += 1
+
+# ffmpeg -framerate 8 -i dm_%03d.png -vf "scale=930:748" -c:v libx264 -pix_fmt yuv420p -y temp.mp4
+# ffmpeg -framerate 8 -i temp_%03d.png -vf "scale=930:748" -c:v libx264 -pix_fmt yuv420p -y temp.mp4

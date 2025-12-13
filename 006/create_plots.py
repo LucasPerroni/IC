@@ -7,7 +7,7 @@ import matplotlib.colors as clrs
 from matplotlib.ticker import MultipleLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-SNAPSHOT_CODE = "0005_0006_2000/"
+SNAPSHOT_CODE = "0005_0007_3000/"
 SNAPSHOT_PATH = "/mnt/d/UFPR/IC/snapshots/" + SNAPSHOT_CODE
 IMAGE_PATH = "/home/lucasbondep/ic_astronomia/main/006/plots/" + SNAPSHOT_CODE
 
@@ -29,18 +29,27 @@ for i in range(len(lines)):
     snapshots.append(file)
 
 count = 0
+# s_init, s_end = 80, 90 # 0005_0005_0
+# s_init, s_end = 54, 64 # 0005_0005_1000
+# s_init, s_end = 32, 42 # 0005_0005_3000
+
+# s_init, s_end = 90, 100 # 0005_0006_0
 # s_init, s_end = 90, 100 # 0005_0006_100
 # s_init, s_end = 60, 70 # 0005_0006_1000
-s_init, s_end = 40, 50 # 0005_0006_2000
+# s_init, s_end = 40, 50 # 0005_0006_2000
+# s_init, s_end = 28, 38 # 0005_0006_3000
+
+s_init, s_end = 82, 92 # 0005_0007_0
+# s_init, s_end = 53, 63 # 0005_0007_1000
+# s_init, s_end = 32, 42 # 0005_0007_3000
 for file in snapshots:
     if (count > s_end) | (count < s_init):
-    # if (count < 90):
         count += 1
         continue
 
     print(f"{bcolors.OKGREEN}Generating frame {count} of {len(lines) - 1:03d}...{bcolors.ENDC}")
 
-    # ----------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------
 
     plt.rcParams['figure.figsize'  ] = (7, 6)
     plt.rcParams['font.size'       ] = 16
@@ -61,9 +70,10 @@ for file in snapshots:
     plt.rcParams['ytick.major.width'] = 0.75
     plt.rcParams['ytick.minor.width'] = 0.5
 
-    width = 1800 # Unit: kpc
+    # width = 1800 # Unit: kpc
+    width = 6000 # Unit: kpc
 
-    # DATA -----------------------------------------------------------------------------------------
+    # DATA ------------------------------------------------------------------------------------
     df = pynbody.load(file)
     df.physical_units()
     
@@ -76,7 +86,7 @@ for file in snapshots:
     Mh = 1.67262192 * 10**(-27) # Proton mass in kg
     df.gas["kT"] = (df.gas["u"] * (2 * mi * Mh) / 3) * 6.241506 * 10**15 * 10**(6)
 
-    # DENSITY --------------------------------------------------------------------------------------
+    # GAS DENSITY -----------------------------------------------------------------------------
     fig, ax = plt.subplots(nrows=1, ncols=1)
 
     plt.sca(ax)  # Define o eixo atual para o sph.image
@@ -89,7 +99,7 @@ for file in snapshots:
         av_z='rho',
         vmin=2e-28, 
         vmax=3e-25,
-        show_cbar=False,
+        show_cbar=True,
         noplot=True
     )
 
@@ -112,6 +122,45 @@ for file in snapshots:
     cb.set_label(r'$\log \, \rho \;$ (g cm$^{-3}) $', labelpad=8)
 
     plt.savefig(f'{IMAGE_PATH}density_{count:03d}.png', dpi=300)
+    plt.close()
+
+    # DM DENSITY ---------------------------------------------------------------------------------
+    fig, ax = plt.subplots(nrows=1, ncols=1)
+
+    plt.sca(ax)  # Define o eixo atual para o sph.image
+    im_array = sph.image(
+        df.dm,
+        qty="rho",
+        units="g cm^-3",
+        width=width,
+        cmap="twilight",
+        av_z='rho',
+        vmin=2e-28, 
+        vmax=3e-25,
+        show_cbar=True,
+        noplot=True
+    )
+
+    # Constrói o plot manualmente
+    extent = (-width/2, width/2, -width/2, width/2)
+    norm = clrs.LogNorm(vmin=1e-28, vmax=1e-24)
+    im = ax.imshow(im_array, cmap="twilight", extent=extent, norm=norm)
+    ax.invert_xaxis()
+
+    fig.subplots_adjust(left=0.15, bottom=0.075, top=0.925, right=0.81, hspace=0.00, wspace=0.0)
+    ax.set_xlabel(r'$x$ (kpc)')
+    ax.set_ylabel(r'$y$ (kpc)')
+    ax.set_aspect('equal')
+    ax.annotate(f'{np.around(time_snapshot, 3)} Gyr', xy=(-width/3.5, width/2.3), 
+                color='black', zorder=4, fontsize=16)
+
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="3.5%", pad=0.1)
+    cb = plt.colorbar(im, cax=cax)
+    cb.set_label(r'$\log \, \rho \;$ (g cm$^{-3}) $', labelpad=8)
+
+    plt.savefig(f'{IMAGE_PATH}dm_{count:03d}.png', dpi=300)
+    plt.close()
 
     # TEMPERATURE ----------------------------------------------------------------------------------
     fig, ax = plt.subplots(nrows=1, ncols=1)
@@ -122,13 +171,14 @@ for file in snapshots:
         qty="kT",
         width=width,
         cmap="inferno",
-        show_cbar=False,
+        show_cbar=True,
         noplot=True
     )
 
     # Constrói o plot manualmente
     extent = (-width/2, width/2, -width/2, width/2)
-    norm = clrs.Normalize(vmin=0, vmax=12)
+    # norm = clrs.Normalize(vmin=0, vmax=12)
+    norm = clrs.Normalize(vmin=0, vmax=15)
     im = ax.imshow(im_array, cmap="inferno", extent=extent, norm=norm)
     ax.invert_xaxis()
 
@@ -145,5 +195,14 @@ for file in snapshots:
     cb.set_label(r'$kT$ (keV)', labelpad=8)
 
     plt.savefig(f'{IMAGE_PATH}temperature_{count:03d}.png', dpi=300)
+    plt.close()
 
     count += 1
+
+# CRIAR ANIMAÇÕES ----------------------------------------------------------------------
+
+# ffmpeg -framerate 12 -i dm_%03d.png -vf "scale=930:748" -c:v libx264 -pix_fmt yuv420p -y dm.mp4
+# ffmpeg -framerate 12 -i density_%03d.png -vf "scale=930:748" -c:v libx264 -pix_fmt yuv420p -y density.mp4
+# ffmpeg -framerate 12 -i temperature_%03d.png -vf "scale=930:748" -c:v libx264 -pix_fmt yuv420p -y temperature.mp4
+
+# ffmpeg -i dm.mp4 -i density.mp4 -i temperature.mp4 -filter_complex "hstack=inputs=3" -c:v libx264 -pix_fmt yuv420p -y combined.mp4

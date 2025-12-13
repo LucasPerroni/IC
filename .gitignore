@@ -6,5 +6,6 @@ images/
 snapshots/
 python-env/
 005/hdf5/
+__pycache__/
 *.hdf5
 *.mp4
