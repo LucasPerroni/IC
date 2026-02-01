@@ -13,3 +13,5 @@
 006: Pynbody plot manipulator
 
 007: Velocidade relativa entre aglomerados
+
+008: Machs e Temperaturas em função de v0

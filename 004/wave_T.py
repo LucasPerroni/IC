@@ -25,32 +25,44 @@ dxdt = {"x": [], "t": []} # objeto para plotar a posição da descontinuidade pe
 velocities = {"cs": [], "u": []} # objeto para calcular o número de mach pela velocidade
 machs = {"time": [], "mach": []} # objeto para guardar os machs calculados por T2/T1
 erro_savgol_mach = {"time": [], "erro": []} # objeto para guardar os erros dos machs pelo filtro Savitzky-Golay
-last_snapshot_descontinuity = 0
+last_snapshot_descontinuity = 0 # pega a posição da descontinuidade no ultimo snapshot
 lines = open(SNAPSHOT_PATH + "snapshot.txt", "r").readlines()
 os.makedirs(f"{IMAGE_PATH}", exist_ok=True)
 
-# ================= CONFIGURAÇÕES POR SNAPSHOT =================
+# CONFIGURAÇÕES POR SNAPSHOT
 SNAPSHOT_CONFIG = {
     "0005_0005_0/": {
         "s_init": 80,
         "s_end": 90,
-        "mask_lower": 270,
-        "mask_upper": 660,
+        "mask_lower": -100,
+        "mask_upper": 400,
         "interacoes": 200,
+        "x_init": -200,
+        "x_end": 600,
+        "max_kT": 17,
+        "max_dx": 100,
     },
     "0005_0005_1000/": {
         "s_init": 54,
         "s_end": 64,
-        "mask_lower": 270,
-        "mask_upper": 840,
+        "mask_lower": 400,
+        "mask_upper": 1050,
         "interacoes": 200,
+        "x_init": 300,
+        "x_end": 1200,
+        "max_kT": 20,
+        "max_dx": 100,
     },
     "0005_0005_3000/": {
-        "s_init": 32,
-        "s_end": 42,
-        "mask_lower": 270,
-        "mask_upper": 840,
+        "s_init": 30,
+        "s_end": 40,
+        "mask_lower": 600,
+        "mask_upper": 1700,
         "interacoes": 200,
+        "x_init": 600,
+        "x_end": 1900,
+        "max_kT": 30,
+        "max_dx": 200,
     },
     "0005_0006_0/": {
         "s_init": 95,
@@ -58,27 +70,43 @@ SNAPSHOT_CONFIG = {
         "mask_lower": 270,
         "mask_upper": 660,
         "interacoes": 200,
+        "x_init": 200,
+        "x_end": 1000,
+        "max_kT": 12,
+        "max_dx": 100,
     },
     "0005_0006_100/": {
         "s_init": 90,
         "s_end": 100,
         "mask_lower": 270,
         "mask_upper": 660,
-        "interacoes": 145,
+        "interacoes": 200,
+        "x_init": 200,
+        "x_end": 1000,
+        "max_kT": 10,
+        "max_dx": 100,
     },
     "0005_0006_1000/": {
         "s_init": 60,
         "s_end": 70,
         "mask_lower": 270,
         "mask_upper": 840,
-        "interacoes": 178,
+        "interacoes": 200,
+        "x_init": 200,
+        "x_end": 1000,
+        "max_kT": 10,
+        "max_dx": 100,
     },
     "0005_0006_2000/": {
         "s_init": 40,
         "s_end": 50,
         "mask_lower": 270,
         "mask_upper": 840,
-        "interacoes": 110,
+        "interacoes": 200,
+        "x_init": 200,
+        "x_end": 1000,
+        "max_kT": 10,
+        "max_dx": 100,
     },
     "0005_0006_3000/": {
         "s_init": 30,
@@ -86,27 +114,43 @@ SNAPSHOT_CONFIG = {
         "mask_lower": 270,
         "mask_upper": 840,
         "interacoes": 150,
+        "x_init": 200,
+        "x_end": 1000,
+        "max_kT": 12,
+        "max_dx": 100,
     },
     "0005_0007_0/": {
         "s_init": 82,
         "s_end": 92,
-        "mask_lower": 270,
-        "mask_upper": 660,
+        "mask_lower": -50,
+        "mask_upper": 400,
         "interacoes": 200,
+        "x_init": -100,
+        "x_end": 600,
+        "max_kT": 15,
+        "max_dx": 100,
     },
     "0005_0007_1000/": {
         "s_init": 53,
         "s_end": 63,
         "mask_lower": 270,
-        "mask_upper": 840,
+        "mask_upper": 900,
         "interacoes": 200,
+        "x_init": 200,
+        "x_end": 1000,
+        "max_kT": 17,
+        "max_dx": 100,
     },
     "0005_0007_3000/": {
-        "s_init": 32,
-        "s_end": 42,
-        "mask_lower": 270,
-        "mask_upper": 840,
+        "s_init": 30,
+        "s_end": 40,
+        "mask_lower": 500,
+        "mask_upper": 1500,
         "interacoes": 200,
+        "x_init": 450,
+        "x_end": 1600,
+        "max_kT": 25,
+        "max_dx": 200,
     },
 }
 
@@ -117,6 +161,10 @@ try:
     mask_lower = cfg["mask_lower"]
     mask_upper = cfg["mask_upper"]
     interacoes = cfg["interacoes"]
+    x_init = cfg["x_init"]
+    x_end = cfg["x_end"]
+    max_kT = cfg["max_kT"]
+    max_dx = cfg["max_dx"]
 except KeyError:
     raise ValueError(f"Configuração não encontrada para SNAPSHOT_CODE = {SNAPSHOT_CODE}")
 
@@ -165,10 +213,10 @@ for i in range(len(lines)):
             x_plot.append((x1 + x2) / 2)
             kT_plot.append(kT)
     else:
-        length = 1000 - 200
+        length = x_end - x_init
         for j in range(interacoes):
-            x1 = 200 + (j * length / interacoes)
-            x2 = 200 + ((j + 1) * length / interacoes)
+            x1 = x_init + (j * length / interacoes)
+            x2 = x_init + ((j + 1) * length / interacoes)
             cond = (x > x1) & (x < x2) & limit_yz
 
             u = np.mean(u_tot[cond])
@@ -194,7 +242,7 @@ for i in range(len(lines)):
             idx = valid_idx[np.argmin(grad_kT[valid_idx])]
         else:
             dx = np.abs(x_plot[valid_idx] - last_snapshot_descontinuity)
-            close_idx = valid_idx[dx < 100]
+            close_idx = valid_idx[dx < max_dx]
             if len(close_idx) > 0:
                 idx = close_idx[np.argmin(grad_kT[close_idx])]
             else:
@@ -268,8 +316,8 @@ for i in range(len(lines)):
         ax.axhline(y=max(kT_plot_filtrado), color='g', linestyle='--', alpha=0.5, 
                    label=f'Maior temperatura: {max(kT_plot_filtrado):.2f}')
     else:
-        ax.set_xlim(200, 1000)
-        ax.set_ylim(0, 12)
+        ax.set_xlim(x_init, x_end)
+        ax.set_ylim(0, max_kT)
     if PLOT_INFOS:
         # ax.axhline(y=kT_plot_filtrado[idx_maior], color='g', linestyle='--', alpha=0.2, label=f'T2')
         # ax.axhline(y=kT_plot_filtrado[idx_menor], color='purple', linestyle='--', alpha=0.2, label=f'T1')
