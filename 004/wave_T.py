@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter
 from functions import *
 
-SNAPSHOT_CODE = "0005_0006_0/"
+SNAPSHOT_CODE = "0005_0006_3000/"
 SNAPSHOT_PATH = "/mnt/d/UFPR/IC/snapshots/" + SNAPSHOT_CODE
 IMAGE_PATH = "plot/" + SNAPSHOT_CODE
 PLOT_INFOS = True
@@ -66,6 +66,7 @@ SNAPSHOT_CONFIG = {
     },
     "0005_0006_0/": {
         "s_init": 95,
+        # "s_end": 100,
         "s_end": 105,
         "mask_lower": 270,
         "mask_upper": 660,
@@ -74,20 +75,24 @@ SNAPSHOT_CONFIG = {
         "x_end": 1000,
         "max_kT": 12,
         "max_dx": 100,
+        "mach_med": 2.18,
     },
     "0005_0006_100/": {
         "s_init": 90,
+        # "s_end": 95,
         "s_end": 100,
         "mask_lower": 270,
         "mask_upper": 660,
         "interacoes": 200,
-        "x_init": 200,
+        "x_init": 180,
         "x_end": 1000,
         "max_kT": 10,
         "max_dx": 100,
+        "mach_med": 2.24,
     },
     "0005_0006_1000/": {
         "s_init": 60,
+        # "s_end": 65,
         "s_end": 70,
         "mask_lower": 270,
         "mask_upper": 840,
@@ -96,28 +101,33 @@ SNAPSHOT_CONFIG = {
         "x_end": 1000,
         "max_kT": 10,
         "max_dx": 100,
+        "mach_med": 2.70,
     },
     "0005_0006_2000/": {
         "s_init": 40,
+        # "s_end": 45,
         "s_end": 50,
-        "mask_lower": 270,
-        "mask_upper": 840,
+        "mask_lower": 300,
+        "mask_upper": 800,
         "interacoes": 200,
         "x_init": 200,
         "x_end": 1000,
         "max_kT": 10,
         "max_dx": 100,
+        "mach_med": 2.76,
     },
     "0005_0006_3000/": {
-        "s_init": 30,
-        "s_end": 40,
-        "mask_lower": 270,
-        "mask_upper": 840,
-        "interacoes": 150,
-        "x_init": 200,
-        "x_end": 1000,
-        "max_kT": 12,
+        "s_init": 26,
+        "s_end": 31,
+        # "s_end": 36,
+        "mask_lower": 100,
+        "mask_upper": 600,
+        "interacoes": 180,
+        "x_init": 0,
+        "x_end": 600,
+        "max_kT": 14,
         "max_dx": 100,
+        "mach_med": 2.62,
     },
     "0005_0007_0/": {
         "s_init": 82,
@@ -165,6 +175,7 @@ try:
     x_end = cfg["x_end"]
     max_kT = cfg["max_kT"]
     max_dx = cfg["max_dx"]
+    mach_med = cfg["mach_med"]
 except KeyError:
     raise ValueError(f"Configuração não encontrada para SNAPSHOT_CODE = {SNAPSHOT_CODE}")
 
@@ -229,8 +240,8 @@ for i in range(len(lines)):
 
     if PLOT_INFOS:
         # Medindo a descontinuidade de temperatura
-        sep = 18 # numero de pontos entre T1/T2 e a descontinuidade
-
+        sep = int(interacoes/7) # numero de pontos entre T1/T2 e a descontinuidade
+ 
         x_plot = np.array(x_plot)
         mask_range = (x_plot > mask_lower) & (x_plot < mask_upper) # Considerar só valores dentro desse range para determinar a descontinuidade
         grad_kT = np.full_like(kT_plot_filtrado, 0, dtype=float)
@@ -261,11 +272,11 @@ for i in range(len(lines)):
         erro_savgol_mach['erro'].append(erro)
 
         # Calculando as velocidades no gás não chocado
-        plot_limit = limit_yz & (x > 200)
+        plot_limit = limit_yz & (x > x_init)
         descontinuity_limit = limit_yz & (x > x_plot[idx])
         # x_nao_chocado = sorted(x[descontinuity_limit])[int(len(x[descontinuity_limit])/1.05)]
         x_nao_chocado = x_plot[idx] + 250
-        volume_limit = limit_yz & (x > x_nao_chocado -100) & (x < x_nao_chocado + 100)
+        volume_limit = limit_yz & (x > x_nao_chocado -50) & (x < x_nao_chocado + 50)
 
         u = np.mean(u_tot[volume_limit]) # Energia interna no gás não chocado
         kT = (u * (2 * mi * Mh) / 3) * 6.241506 * 10**15 # Temperature in J -> keV
@@ -275,20 +286,24 @@ for i in range(len(lines)):
         velocities['cs'].append(cs)
         velocities['u'].append(u)
 
-        # fig, ax = plt.subplots(figsize=(8, 6))
-        # ax.plot(x[plot_limit], vx[plot_limit], ".", markersize=1.2)
-        # # ax.set_title(f"Velocity x Radius - {time:.3f} Gyr")
-        # ax.set_ylabel("velocity (km/s)")
-        # ax.set_xlabel("x (kpc)")
-        # ax.axvline(x=x_nao_chocado, color="y", linestyle="--", alpha=0.5, label="Não Chocado")
-        # ax.axvline(x=x_plot[idx], color="black", linestyle="--", alpha=0.5, label="Descontinuidade")
-        # ax.axhline(y=0, color='r', linestyle='--', alpha=0.5, label="0 km/s")
-        # ax.set_xlim(200, 1200)
-        # ax.set_ylim(-600, 1800)
-        # ax.legend()
-        # plt.tight_layout()
-        # plt.savefig(f"{IMAGE_PATH}x_vx_{i:03d}.png")
-        # plt.close()
+        # PLOT VELOCIDADE X POSIÇÃO
+        if not FULL_PLOT:
+            fig, ax = plt.subplots(figsize=(8, 6))
+            ax.plot(x[plot_limit], vx[plot_limit], ".", markersize=1.2)
+            # ax.set_title(f"Velocity x Radius - {time:.3f} Gyr")
+            ax.set_ylabel("velocity (km/s)")
+            ax.set_xlabel("x (kpc)")
+            ax.axvline(x=x_nao_chocado, color='#aba9a9', linestyle="--", alpha=0.5, label="Não Chocado")    
+            ax.axvline(x=x_plot[idx], color="black", linestyle="--", alpha=0.5, label="Descontinuidade")
+            ax.axvspan(x_nao_chocado-50, x_nao_chocado+50, facecolor='#aba9a9', alpha=0.2, label="Intervalo de análise da velocidade não chocada")
+            ax.axhline(y=0, color='#aba9a9', linestyle='-', alpha=0.8)
+            ax.set_xlim(x_init, x_end + 500)
+            ax.set_ylim(-600, 2000)
+            ax.legend()
+            plt.tight_layout()
+            os.makedirs(f"{IMAGE_PATH}velocity", exist_ok=True)
+            plt.savefig(f"{IMAGE_PATH}velocity/x_vx_{i:03d}.png")
+            plt.close()
 
         # Calculando número de Mach
         if T1 == 0.0:
@@ -298,13 +313,18 @@ for i in range(len(lines)):
         mach = solve(eq)
         mach = max([m for m in mach if im(m) == 0])
 
+        # Calcula qual seria o T1 se o mach fosse o da velocidade
+        t1 = symbols('t1')
+        eq = Eq((5*mach_med**4 + 14*mach_med**2 - 3) / (16*mach_med**2), T2/t1)
+        t1_value = solve(eq)
+
         machs['time'].append(time)
         machs['mach'].append(mach)
 
         dxdt["x"].append(x_plot[idx])
         dxdt['t'].append(time)
 
-    # Plot individual
+    # PLOT TEMPERATURA X POSIÇÃO
     fig, ax = plt.subplots(figsize=(8, 6))
     ax.plot(x_plot, kT_plot_filtrado, '.', ms = 4, mec = pontos, mfc = pontos, label='Temperatura das partículas')
     # ax.set_title(f"Temperature x Radius - {time:.3f} Gyr")
@@ -319,8 +339,9 @@ for i in range(len(lines)):
         ax.set_xlim(x_init, x_end)
         ax.set_ylim(0, max_kT)
     if PLOT_INFOS:
-        # ax.axhline(y=kT_plot_filtrado[idx_maior], color='g', linestyle='--', alpha=0.2, label=f'T2')
-        # ax.axhline(y=kT_plot_filtrado[idx_menor], color='purple', linestyle='--', alpha=0.2, label=f'T1')
+        ax.axhline(y=kT_plot_filtrado[idx_maior], color="#282828", linestyle='--', alpha=0.2, label=f'T2')
+        # ax.axhline(y=kT_plot_filtrado[idx_menor], color="#818181", linestyle='--', alpha=0.2, label=f'T1')
+        ax.axhline(y=t1_value, color="#818181", linestyle='--', alpha=0.2, label=f'T1')
         ax.axvline(x=x_plot[idx], ls='-', color="#363636", alpha=0.2, label=f'Descontinuidade')
     ax.set_aspect('auto')
     # ax.legend(loc="upper right", fontsize=FONT_SIZE)

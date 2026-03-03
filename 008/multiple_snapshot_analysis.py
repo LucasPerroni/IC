@@ -257,7 +257,7 @@ for SNAPSHOT in SNAPSHOTS:
         plot_limit = limit_yz & (x > 200)
         descontinuity_limit = limit_yz & (x > x_plot[idx])
         x_nao_chocado = x_plot[idx] + 250
-        volume_limit = limit_yz & (x > x_nao_chocado -100) & (x < x_nao_chocado + 100)
+        volume_limit = limit_yz & (x > x_nao_chocado - 50) & (x < x_nao_chocado + 50)
 
         u = np.mean(u_tot[volume_limit]) # Energia interna no gás não chocado
         kT = (u * (2 * mi * Mh) / 3) * 6.241506 * 10**15 # Temperature in J -> keV

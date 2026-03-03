@@ -1,3 +1,4 @@
+import os
 import sys
 import h5py
 import numpy as np
@@ -27,11 +28,77 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-SNAPSHOT_CODE = "0005_0006_100/"
+SNAPSHOT_CODE = "0005_0006_3000/"
 SNAPSHOT_PATH = "/mnt/d/UFPR/IC/snapshots/" + SNAPSHOT_CODE
 IMAGE_PATH = "plots/" + SNAPSHOT_CODE
 MACH_ANALISYS = True
 FONT_SIZE = 14
+
+SNAPSHOT_CONFIG = {
+    "0005_0005_0/": {
+        "s_init": 80,
+        "s_end": 90,
+    },
+    "0005_0005_1000/": {
+        "s_init": 54,
+        "s_end": 64,
+    },
+    "0005_0005_3000/": {
+        "s_init": 30,
+        "s_end": 40,
+    },
+    "0005_0006_0/": {
+        "s_init": 95,
+        # "s_end": 100,
+        "s_end": 105,
+        "mach_med": 2.18,
+    },
+    "0005_0006_100/": {
+        "s_init": 90,
+        # "s_end": 95,
+        "s_end": 100,
+        "mach_med": 2.24,
+    },
+    "0005_0006_1000/": {
+        "s_init": 60,
+        # "s_end": 65,
+        "s_end": 70,
+        "mach_med": 2.70,
+    },
+    "0005_0006_2000/": {
+        "s_init": 40,
+        # "s_end": 45,
+        "s_end": 50,
+        "mach_med": 2.76,
+    },
+    "0005_0006_3000/": {
+        "s_init": 26,
+        # "s_end": 31,
+        "s_end": 36,
+        "mach_med": 2.62,
+    },
+    "0005_0007_0/": {
+        "s_init": 82,
+        "s_end": 92,
+    },
+    "0005_0007_1000/": {
+        "s_init": 53,
+        "s_end": 63,
+    },
+    "0005_0007_3000/": {
+        "s_init": 30,
+        "s_end": 40,
+    },
+}
+
+try:
+    cfg = SNAPSHOT_CONFIG[SNAPSHOT_CODE]
+    s_init = cfg["s_init"]
+    s_end = cfg["s_end"]
+    if cfg["mach_med"]:
+        mach_med = cfg["mach_med"]
+except KeyError:
+    raise ValueError(f"Configuração não encontrada para SNAPSHOT_CODE = {SNAPSHOT_CODE}")
 
 # cores
 pontos = '#4772FF'
@@ -45,10 +112,7 @@ sim_time = []
 
 dist_prev = None
 shock_detected = False
-if MACH_ANALISYS:
-    s_init, s_end = 90, 100 # 0005_0006_100
-    # s_init, s_end = 60, 70 # 0005_0006_1000
-    # s_init, s_end = 40, 50 # 0005_0006_2000
+os.makedirs(f"{IMAGE_PATH}", exist_ok=True)
 
 lines = open(SNAPSHOT_PATH + "snapshot.txt", "r").readlines()
 for i in range(len(lines)):
