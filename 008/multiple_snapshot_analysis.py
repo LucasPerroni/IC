@@ -58,7 +58,7 @@ SNAPSHOT_CONFIG = {
         "mask_lower": 270,
         "mask_upper": 660,
         "interacoes": 200,
-        "x_init": 200,
+        "x_init": 180,
         "x_end": 1000,
         "max_kT": 10,
         "max_dx": 100,
@@ -131,7 +131,8 @@ SNAPSHOT_CONFIG = {
     },
 }
 
-FONT_SIZE = 14
+FONT_SIZE = 18
+AXIS_SIZE = 18
 IMAGE_NAME = "0005_0006"
 
 SNAPSHOTS = ["0005_0006_0", 
@@ -146,9 +147,12 @@ gamma_var = 5/3 # coeficiente de dilatação adiabática do gás
 
 # cores
 pontos = '#4772FF'
-linha = '#BACBFF'
+linha = '#4772FF70'
 
-plot_data = {"v0": [], "mach": [], "temperature": []}
+plt.rcParams['font.family'     ] = 'STIXGeneral'
+plt.rcParams['mathtext.fontset'] = 'stix'
+
+plot_data = {"v0": [], "mach": [], "mach_01Gyr": [], "temperature": [], "temperature_01Gyr": []}
 
 for SNAPSHOT in SNAPSHOTS:
     SNAPSHOT_CODE = SNAPSHOT
@@ -176,6 +180,7 @@ for SNAPSHOT in SNAPSHOTS:
     except KeyError:
         raise ValueError(f"Configuração não encontrada para SNAPSHOT_CODE = {SNAPSHOT_CODE}")
 
+    snapshot_num = 1
     for i in range(len(lines)):
         if (i < s_init) | (i > s_end):
             continue
@@ -267,32 +272,41 @@ for SNAPSHOT in SNAPSHOTS:
         velocities['cs'].append(cs)
         velocities['u'].append(u)
 
-        # Calculando número de Mach
-        if T1 == 0.0:
-            T1 = 0.1
-        M = symbols('M')
-        eq = Eq((5*M**4 + 14*M**2 - 3) / (16*M**2), T2/T1)
-        mach = solve(eq)
-        mach = max([m for m in mach if im(m) == 0])
-
-        machs['time'].append(time)
-        machs['mach'].append(mach)
-
         dxdt["x"].append(x_plot[idx])
         dxdt['t'].append(time)
+
+        # Calculando número de Mach em 0.1 Gyr
+        if snapshot_num == 6:
+            a, b = np.polyfit(dxdt['t'], dxdt['x'], 1) 
+            mach_v = (a*0.9778 - np.mean(velocities['u'])) / np.mean(velocities['cs'])
+
+            plot_data["mach_01Gyr"].append(mach_v)
+            plot_data["temperature_01Gyr"].append(np.mean(temperatures))
+            
+        # if T1 == 0.0:
+        #     T1 = 0.1
+        # M = symbols('M')
+        # eq = Eq((5*M**4 + 14*M**2 - 3) / (16*M**2), T2/T1)
+        # mach = solve(eq)
+        # mach = max([m for m in mach if im(m) == 0])
+
+        # machs['time'].append(time)
+        # machs['mach'].append(mach)
+
+        snapshot_num += 1
 
     # Calcula o Mach pela velocidade
     a, b = np.polyfit(dxdt['t'], dxdt['x'], 1) 
     mach_v = (a*0.9778 - np.mean(velocities['u'])) / np.mean(velocities['cs'])
 
-    plot_data["v0"].append(SNAPSHOT.split("_")[2])
+    plot_data["v0"].append(Number(SNAPSHOT.split("_")[2]))
     plot_data["mach"].append(mach_v)
     plot_data["temperature"].append(np.mean(temperatures))
 
-# PLOT
+# PLOT ---------------------------------------------------------
 # Magens das escalas
-temp = np.array(plot_data["temperature"], dtype=float)
-mach = np.array(plot_data["mach"], dtype=float)
+temp = np.array(plot_data["temperature"] + plot_data["temperature_01Gyr"], dtype=float)
+mach = np.array(plot_data["mach"] + plot_data["mach_01Gyr"], dtype=float)
 
 temp_margin = 0.05 * (temp.max() - temp.min())
 mach_margin = 0.05 * (mach.max() - mach.min())
@@ -302,42 +316,96 @@ temp_max = temp.max() + temp_margin
 mach_min = mach.min() - mach_margin
 mach_max = mach.max() + mach_margin
 
-# Plot 
-fig, ax1 = plt.subplots(figsize=(8, 6))
+# TEMPERATURE ---------------------------------------------------------
+temp_02 = np.array(plot_data["temperature"], dtype=float)
+temp_01 = np.array(plot_data["temperature_01Gyr"], dtype=float)
+temp_mean = (temp_02 + temp_01) / 2
 
-# --- Temperatura (eixo Y esquerdo) ---
-ax1.plot(
+temp_err_lower = temp_mean - np.minimum(temp_02, temp_01)
+temp_err_upper = np.maximum(temp_02, temp_01) - temp_mean
+
+x = np.array(plot_data["v0"], dtype=float)
+y_lower = temp_mean - temp_err_lower
+y_upper = temp_mean + temp_err_upper
+
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.plot(
     plot_data["v0"],
-    plot_data["temperature"],
-    'o-',
+    temp_mean,
+    'o',
     color=pontos,
-    label='Temperatura'
+    label='Temperature'
 )
-ax1.set_xlabel('$v_0$ (km/s)', fontsize=FONT_SIZE)
-ax1.set_ylabel('$kT$ (keV)', fontsize=FONT_SIZE, color=pontos)
-ax1.tick_params(axis='y', labelcolor=pontos)
-ax1.set_ylim(temp_min, temp_max)
-
-# --- Mach (eixo Y direito) ---
-ax2 = ax1.twinx()
-ax2.plot(
+ax.plot(
     plot_data["v0"],
-    plot_data["mach"],
-    's--',
-    color='tab:red',
-    label='Mach'
+    temp_mean,
+    '-',
+    color=linha,
 )
-ax2.set_ylabel('Mach', fontsize=FONT_SIZE, color='tab:red')
-ax2.tick_params(axis='y', labelcolor='tab:red')
-ax2.set_ylim(mach_min, mach_max)
-
-# --- Legenda combinada ---
-lines1, labels1 = ax1.get_legend_handles_labels()
-lines2, labels2 = ax2.get_legend_handles_labels()
-ax1.legend(lines1 + lines2, labels1 + labels2, fontsize=FONT_SIZE)
-
-ax1.tick_params(axis='x', labelsize=FONT_SIZE)
-
+ax.fill_between(
+    x,
+    y_lower,
+    y_upper,
+    color=pontos,
+    alpha=0.30,
+    linewidth=0
+)
+ax.set_xlabel('$v_{\mathrm{0}}\ \mathrm{(km\,s^{-1})}$', fontsize=FONT_SIZE)
+ax.set_ylabel('$kT$ (keV)', fontsize=FONT_SIZE)
+ax.tick_params(axis='both', labelsize=AXIS_SIZE)
+# ax.set_ylim(temp_min, temp_max)
+ax.set_ylim(5, 10)
 plt.tight_layout()
-plt.savefig(f"plots/temperature_mach_v0_{IMAGE_NAME}.png")
+plt.savefig(f"plots/{IMAGE_NAME}_temperature_v0.png")
 plt.close()
+
+# MACH ---------------------------------------------------------
+mach_02 = np.array(plot_data["mach"], dtype=float)
+mach_01 = np.array(plot_data["mach_01Gyr"], dtype=float)
+mach_mean = (mach_02 + mach_01) / 2
+
+mach_err_lower = mach_mean - np.minimum(mach_02, mach_01)
+mach_err_upper = np.maximum(mach_02, mach_01) - mach_mean
+
+x = np.array(plot_data["v0"], dtype=float)
+y_lower = mach_mean - mach_err_lower
+y_upper = mach_mean + mach_err_upper
+
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.plot(
+    plot_data["v0"],
+    mach_mean,
+    'o',
+    color=pontos,
+    label='Mach number'
+)
+ax.plot(
+    plot_data["v0"],
+    mach_mean,
+    '-',
+    color=linha,
+)
+ax.fill_between(
+    x,
+    y_lower,
+    y_upper,
+    color=pontos,
+    alpha=0.30,
+    linewidth=0
+)
+ax.set_xlabel('$v_{\mathrm{0}}\ \mathrm{(km\,s^{-1})}$', fontsize=FONT_SIZE)
+ax.set_ylabel('Mach number', fontsize=FONT_SIZE)
+ax.tick_params(axis='both', labelsize=AXIS_SIZE)
+# ax.set_ylim(mach_min, mach_max)
+ax.set_ylim(0, 4)
+plt.tight_layout()
+plt.savefig(f"plots/{IMAGE_NAME}_mach_v0.png")
+plt.close()
+
+print(f"Mach 0.1 Gyr: {plot_data['mach_01Gyr']}")
+print(f"Mach 0.2 Gyr: {plot_data['mach']}")
+print(f"Mach Med: {mach_mean} \n")
+
+print(f"Temperature 0.1 Gyr: {plot_data['temperature_01Gyr']}")
+print(f"Temperature 0.2 Gyr: {plot_data['temperature']}")
+print(f"Temperature Med: {temp_mean}")
